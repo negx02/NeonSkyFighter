@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Neon Sky Fighter</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="main-wrapper">
+
+    <aside class="sidebar" id="left-sidebar">
+        <h3>PILOT DATA</h3>
+        <div class="highscore-box" id="highscore-box">
+            <span class="highscore-label" id="highscore-label">HIGH SCORE</span>
+            <span class="highscore-val" id="high-score-display">0</span>
+        </div>
+        <div class="control-group">
+            <div class="control-title" style="color:#00ffff;">JUGADOR 1</div>
+            <div class="control-row"><canvas id="icon-wasd" width="60" height="40"></canvas></div>
+            <div class="control-label">MOVERSE</div><br>
+            <div class="control-row"><canvas id="icon-space" width="60" height="30"></canvas></div>
+            <div class="control-label">DISPARAR</div>
+        </div>
+    </aside>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" tabindex="0" class="canvas-blur"></canvas>
+        <div class="scanlines"></div>
+
+        <div id="ui-layer" class="hidden">
+            <div class="hud-p1">
+                <div class="hud-score">SCORE: <span id="p1-score">0</span></div>
+                <div class="hud-combo" id="combo-display"></div>
+                <div class="hp-text">P1 HP: <span id="p1-hp">100</span>%</div>
+                <div class="heat-wrapper">
+                    <div class="heat-label">CALOR</div>
+                    <div class="heat-container"><div id="p1-heat-bar" class="heat-bar p1-heat-bar"></div></div>
+                </div>
+                <div class="heat-wrapper" style="margin-top:8px;">
+                    <div class="heat-label" id="ability-name-label" style="color:#ffff00;">HABILIDAD</div>
+                    <div class="heat-container"><div id="p1-ability-bar" class="heat-bar" style="background-color:#444;"></div></div>
+                    <div class="control-label" style="margin-top:2px;">TECLA: <span id="ability-key-label">Q</span></div>
+                </div>
+            </div>
+
+            <div class="hud-p2" id="hud-p2-container">
+                <div class="p2-score">P2 SCORE: <span id="p2-score">0</span></div>
+                <div class="hp-text">P2 HP: <span id="p2-hp">100</span>%</div>
+                <div class="heat-wrapper" style="align-items: flex-end;">
+                    <div class="heat-label">CALOR</div>
+                    <div class="heat-container"><div id="p2-heat-bar" class="heat-bar p2-heat-bar"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="boss-hp-container" class="hidden">
+            <div>BOSS LVL <span id="boss-lvl-display">1</span></div>
+            <div id="boss-hp-bar"></div>
+        </div>
+
+        <div id="powerup-status">TRIPLE SHOT ACTIVE</div>
+
+        <!-- ===== PANTALLA DE INICIO ===== -->
+        <div id="start-screen" class="overlay-screen">
+            <h1>NEON SKY<br>FIGHTER</h1>
+            <p id="start-progress" style="font-size:11px; margin-top:-25px; color:#39ff14;">NIVEL 1 · 🪙 0</p>
+            <div class="btn-group">
+                <button id="btn-jugar">JUGAR</button>
+                <button id="taller-btn" style="border-color:#39ff14; color:#c6ffc6;">TALLER (MEJORAS)</button>
+                <button id="settings-btn">SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- ===== SELECCIÓN DE MODO ===== -->
+        <div id="mode-select-screen" class="overlay-screen hidden">
+            <h1 style="font-size:36px;">SELECCIONA MODO</h1>
+            <div class="btn-group">
+                <button id="mode-1p">1 JUGADOR</button>
+                <button id="mode-2p" style="border-color:#ffaa00; color:#ffddaa;">2 JUGADORES</button>
+                <button id="mode-back">VOLVER</button>
+            </div>
+        </div>
+
+        <!-- ===== HANGAR DE NAVES (aparece tras elegir modo) ===== -->
+        <div id="hangar-screen" class="overlay-screen hidden">
+            <h1 style="font-size:30px;">HANGAR DE NAVES</h1>
+            <p id="hangar-progress" style="margin-top:-15px;">NIVEL 1 · 🪙 0 MONEDAS</p>
+            <div id="hangar-tabs" class="hidden">
+                <button data-tab="1" class="hangar-tab active-mode">JUGADOR 1</button>
+                <button data-tab="2" class="hangar-tab">JUGADOR 2</button>
+            </div>
+            <div id="ship-grid"></div>
+            <div class="btn-group" style="flex-direction:row; gap:15px; margin-top:20px;">
+                <button id="hangar-back">VOLVER</button>
+                <button id="hangar-start" style="border-color:#39ff14; color:#c6ffc6;">COMENZAR MISIÓN</button>
+            </div>
+        </div>
+
+        <!-- ===== TALLER DE MEJORAS (nuevo sumidero de monedas) ===== -->
+        <div id="taller-screen" class="overlay-screen hidden">
+            <h1 style="font-size:30px;">TALLER DE MEJORAS</h1>
+            <p id="taller-progress" style="margin-top:-15px;">NIVEL 1 · 🪙 0 MONEDAS</p>
+            <div id="upgrade-grid"></div>
+            <button id="taller-back" style="margin-top:20px;">VOLVER</button>
+        </div>
+
+        <!-- ===== SETTINGS ===== -->
+        <div id="settings-screen" class="overlay-screen hidden">
+            <h1>SETTINGS</h1>
+            <p style="margin-bottom: 20px;">CONFIGURACIÓN DE JUEGO</p>
+            <div class="btn-group">
+                <button id="toggle-input-settings">CONTROL P1: TECLADO</button>
+                <div class="volume-control-container">
+                    <div style="color: #fff; font-size: 10px;">VOLUMEN: <span id="sfx-volume-label">100%</span></div>
+                    <input type="range" id="sfx-volume-slider" min="0" max="100" value="100" style="width: 80%; max-width: 250px;">
+                </div>
+                <div style="border-top:1px dashed #444; width:80%; margin: 10px auto; padding-top:15px;">
+                    <div style="color:#39ff14; font-size:12px; margin-bottom:12px;">CONTROLES — HABILIDADES</div>
+                    <button id="rebind-ability-btn">HABILIDAD: <span id="rebind-ability-label">Q</span></button>
+                </div>
+                <button id="back-from-settings">VOLVER</button>
+            </div>
+        </div>
+
+        <!-- ===== PAUSA ===== -->
+        <div id="pause-screen" class="overlay-screen hidden">
+            <h1>PAUSA</h1>
+            <div class="btn-group">
+                <button id="resume-btn">CONTINUAR</button>
+                <button id="toggle-input-pause">CONTROL P1: TECLADO</button>
+                <button id="exit-pause-btn" style="border-color: #ff3333; color: #ffcccc;">SALIR AL MENÚ</button>
+            </div>
+        </div>
+
+        <!-- ===== GAME OVER ===== -->
+        <div id="game-over-screen" class="overlay-screen hidden">
+            <h1 class="game-over-title">GAME OVER</h1>
+            <div id="new-record-msg" class="new-record-anim hidden">¡NUEVO RÉCORD!</div>
+            <h2 style="color:white; font-size: 16px; margin-bottom: 30px;">PUNTUACIÓN FINAL: <span id="final-score">0</span></h2>
+            <button id="restart-btn">REINTENTAR MISIÓN</button>
+            <button id="exit-gameover-btn" style="margin-top: 15px; font-size: 14px; padding: 15px 30px;">SALIR AL MENÚ</button>
+        </div>
+    </div>
+
+    <aside class="sidebar" id="right-sidebar">
+        <div id="right-panel-powerups" class="powerup-container">
+            <h3>POWERUPS</h3>
+            <div id="slot-triple" class="powerup-slot" style="color:#ffff00;"><canvas id="icon-triple-canvas" width="40" height="40"></canvas><span>TRIPLE</span></div>
+            <div id="slot-laser" class="powerup-slot" style="color:#ff3366;"><canvas id="icon-laser-canvas" width="40" height="40"></canvas><span>LÁSER</span></div>
+            <div id="slot-missile" class="powerup-slot" style="color:#ff8800;"><canvas id="icon-missile-canvas" width="40" height="40"></canvas><span>MISILES</span></div>
+            <div id="slot-shield" class="powerup-slot" style="color:#00ffff;"><canvas id="icon-shield-canvas" width="40" height="40"></canvas><span>ESCUDO</span></div>
+            <div id="slot-heal" class="powerup-slot" style="color:#00ff00;"><canvas id="icon-heal-canvas" width="40" height="40"></canvas><span>REPARAR</span></div>
+            <div id="slot-revive" class="powerup-slot" style="color:#ff0000; display:none; border-color:red; box-shadow:0 0 10px red;"><canvas id="icon-revive-canvas" width="40" height="40"></canvas><span>REVIVIR</span></div>
+        </div>
+        <div id="right-panel-p2" class="control-group" style="display:none; border:none; padding-top:0;">
+            <h3>PILOT DATA</h3>
+            <div class="control-title" style="color:#ffaa00;">JUGADOR 2</div>
+            <div class="control-row"><canvas id="icon-mouse-move" width="30" height="40"></canvas></div>
+            <div class="control-label">MOVERSE</div><br>
+            <div class="control-row"><canvas id="icon-mouse-click" width="30" height="40"></canvas></div>
+            <div class="control-label">DISPARAR</div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- === DEBUG_MODE — borra este bloque completo (HTML) === -->
+<!-- Ver js/debug.js para instrucciones completas de eliminación -->
+<!-- ============================================================ -->
+<div id="debug-toast"></div>
+<div id="debug-panel" class="hidden">
+    <div class="dbg-close" id="dbg-close-btn">X</div>
+    <div class="dbg-title">🛠 DEBUG MODE</div>
+    <h4>JEFES</h4>
+    <div class="dbg-row">
+        <button data-dbg="boss" data-lvl="1">Boss Lv1</button>
+        <button data-dbg="boss" data-lvl="2">Boss Lv2</button>
+        <button data-dbg="boss" data-lvl="3">Boss Lv3</button>
+    </div>
+    <h4>ENEMIGOS</h4>
+    <div class="dbg-row">
+        <button data-dbg="enemy" data-type="basic">Vanguard</button>
+        <button data-dbg="enemy" data-type="chaser">Cazador</button>
+    </div>
+    <div class="dbg-row">
+        <button data-dbg="enemy" data-type="miner">Minero</button>
+        <button data-dbg="enemy" data-type="weaver">Weaver</button>
+    </div>
+    <button data-dbg="asteroid">+ Asteroide</button>
+    <h4>POWERUPS (P1)</h4>
+    <div class="dbg-row">
+        <button data-dbg="power" data-type="triple">Triple</button>
+        <button data-dbg="power" data-type="laser">Láser</button>
+    </div>
+    <div class="dbg-row">
+        <button data-dbg="power" data-type="missile">Misiles</button>
+        <button data-dbg="power" data-type="shield">Escudo</button>
+    </div>
+    <div class="dbg-row">
+        <button data-dbg="power" data-type="heal">Reparar</button>
+        <button data-dbg="power" data-type="bomb">Bomba</button>
+    </div>
+    <button data-dbg="revive">Revivir a todos</button>
+    <h4>UTILIDADES</h4>
+    <button id="dbg-godmode" class="dbg-godmode">God Mode: OFF</button>
+    <button data-dbg="addscore" data-amount="1000">+1000 Score</button>
+    <button data-dbg="addscore" data-amount="10000">+10000 Score</button>
+    <button data-dbg="skipboss">Forzar aparición de Boss</button>
+    <button data-dbg="clearall">Limpiar pantalla</button>
+    <button data-dbg="maxcombo">Combo x20 instantáneo</button>
+    <button data-dbg="coins">+500 Monedas</button>
+</div>
+<!-- === DEBUG_MODE fin del bloque HTML === -->
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
