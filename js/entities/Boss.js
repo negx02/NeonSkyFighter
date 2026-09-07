@@ -1,13 +1,18 @@
 // ===== BOSS =====
 import { state, ctx, canvas } from '../state.js';
-import { SPRITE_BOSS } from '../sprites.js';
+import { SPRITE_BOSS, SPRITE_BOSS2, SPRITE_BOSS3 } from '../sprites.js';
 import { Bullet } from './Bullet.js';
 import { playSFX } from '../audio.js';
 
 export class Boss {
     constructor(startX, dir, level) {
         this.ps = 8;
-        this.width = 20 * this.ps; this.height = 10 * this.ps;
+        // Progresión visual: cada nivel tiene un diseño distinto y más ancho que el anterior.
+        // Del nivel 3 en adelante se reutiliza el diseño de nodriza (el más imponente).
+        if (level <= 1) { this.sprite = SPRITE_BOSS; this.baseColor = '#ff00ff'; }
+        else if (level === 2) { this.sprite = SPRITE_BOSS2; this.baseColor = '#ff6622'; }
+        else { this.sprite = SPRITE_BOSS3; this.baseColor = '#cc00ff'; }
+        this.width = this.sprite[0].length * this.ps; this.height = this.sprite.length * this.ps;
         this.x = startX; this.y = -200;
         this.dir = dir; this.level = level;
         this.maxHp = 1000 + (level * 800); this.hp = this.maxHp;
@@ -82,12 +87,12 @@ export class Boss {
         }
     }
     draw() {
-        let color = '#ff00ff';
+        let color = this.baseColor;
         if (this.state === 'rapid_warmup' || this.state === 'laser_charge') color = '#ffffff';
         ctx.save();
         ctx.shadowColor = color; ctx.shadowBlur = 15;
         ctx.fillStyle = color;
-        SPRITE_BOSS.forEach((row, i) => { row.forEach((pixel, j) => { if (pixel === 1) ctx.fillRect(this.x + j * this.ps, this.y + i * this.ps, this.ps, this.ps); }); });
+        this.sprite.forEach((row, i) => { row.forEach((pixel, j) => { if (pixel === 1) ctx.fillRect(this.x + j * this.ps, this.y + i * this.ps, this.ps, this.ps); }); });
         ctx.restore();
         if (this.state === 'laser_fire') {
             const lx = this.x + this.width / 2;

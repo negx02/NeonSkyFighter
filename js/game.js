@@ -10,7 +10,7 @@ import { updateAndDrawParticles, createExplosion } from './systems/particles.js'
 import { registerKill, tickCombo, resetCombo } from './systems/combo.js';
 import { killEnemy } from './systems/combatEvents.js';
 import { playSFX, resumeAudio } from './audio.js';
-import { showHudMsg, showGameHUD, hideGameHUD, setP2HudVisible, setRightPanelMode, updateAbilityUI, bossHPContainer, bossHPBar, bossLvlDisplay, p1ScoreEl, p2ScoreEl } from './systems/ui.js';
+import { showHudMsg, showGameHUD, hideGameHUD, setP2HudVisible, updateAbilityUI, bossHPContainer, bossHPBar, bossLvlDisplay, p1ScoreEl, p2ScoreEl } from './systems/ui.js';
 import { grantProgress } from './systems/progression.js';
 
 let highScore1P = parseInt(localStorage.getItem('neonSkyHighscore1P')) || 0;
@@ -49,7 +49,6 @@ export function startGame(mode, shipP1, shipP2) {
     state.players.push(new Player(1, shipP1));
     if (mode === '2P') { state.players.push(new Player(2, shipP2)); setP2HudVisible(true); }
     else { setP2HudVisible(false); }
-    setRightPanelMode(mode);
 
     state.score = 0; state.difficulty = 1; state.frames = 0;
     state.bullets = []; state.missiles = []; state.enemies = []; state.particles = [];
@@ -127,8 +126,9 @@ function spawnLogic() {
 
         if (state.score > state.nextBossScore) {
             state.isBossActive = true; state.enemies = []; state.powerups = []; state.asteroids = [];
-            const bossWidth = 20 * 8;
-            state.bosses.push(new Boss(canvas.width / 2 - bossWidth / 2, 1, state.bossLevel));
+            const newBoss = new Boss(0, 1, state.bossLevel);
+            newBoss.x = canvas.width / 2 - newBoss.width / 2;
+            state.bosses.push(newBoss);
             bossHPContainer.classList.remove('hidden');
             bossLvlDisplay.innerText = state.bossLevel;
         }

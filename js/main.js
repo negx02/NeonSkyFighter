@@ -4,7 +4,7 @@ import { state } from './state.js';
 import { initInputListeners, setAbilityPressHandler } from './systems/input.js';
 import { initScreens } from './screens.js';
 import { initAttractStars, startAnimationLoop } from './game.js';
-import { drawControlIcons, drawSidebarIcons } from './systems/icons.js';
+import { drawSidebarIcons } from './systems/icons.js';
 
 function resizeCanvas() {
     canvas.width = canvas.clientWidth;
@@ -15,7 +15,6 @@ function resizeCanvas() {
 function bootstrap() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-    drawControlIcons();
     drawSidebarIcons();
 
     setAbilityPressHandler((playerNum) => {

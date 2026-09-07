@@ -5,8 +5,6 @@ export const BOSS_SCORE_THRESHOLD = 7000;
 export const COMBO_WINDOW = 100; // frames antes de que el combo se reinicie
 export const LEVEL_CAP = 500;
 
-export const RESERVED_KEYS = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'escape'];
-
 // XP requerida para pasar del nivel N al N+1.
 // Crece con el nivel (más difícil conforme subes), tope en LEVEL_CAP.
 export function xpRequiredForLevel(level) {

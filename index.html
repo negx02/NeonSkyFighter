@@ -10,24 +10,15 @@
 
 <div id="main-wrapper">
 
-    <aside class="sidebar" id="left-sidebar">
-        <h3>PILOT DATA</h3>
+    <div id="game-container">
+        <canvas id="gameCanvas" tabindex="0" class="canvas-blur"></canvas>
+        <div class="scanlines"></div>
+
+        <!-- Récord: esquina inferior izquierda, siempre visible y pequeño -->
         <div class="highscore-box" id="highscore-box">
             <span class="highscore-label" id="highscore-label">HIGH SCORE</span>
             <span class="highscore-val" id="high-score-display">0</span>
         </div>
-        <div class="control-group">
-            <div class="control-title" style="color:#00ffff;">JUGADOR 1</div>
-            <div class="control-row"><canvas id="icon-wasd" width="60" height="40"></canvas></div>
-            <div class="control-label">MOVERSE</div><br>
-            <div class="control-row"><canvas id="icon-space" width="60" height="30"></canvas></div>
-            <div class="control-label">DISPARAR</div>
-        </div>
-    </aside>
-
-    <div id="game-container">
-        <canvas id="gameCanvas" tabindex="0" class="canvas-blur"></canvas>
-        <div class="scanlines"></div>
 
         <div id="ui-layer" class="hidden">
             <div class="hud-p1">
@@ -108,20 +99,30 @@
 
         <!-- ===== SETTINGS ===== -->
         <div id="settings-screen" class="overlay-screen hidden">
-            <h1>SETTINGS</h1>
-            <p style="margin-bottom: 20px;">CONFIGURACIÓN DE JUEGO</p>
-            <div class="btn-group">
-                <button id="toggle-input-settings">CONTROL P1: TECLADO</button>
-                <div class="volume-control-container">
-                    <div style="color: #fff; font-size: 10px;">VOLUMEN: <span id="sfx-volume-label">100%</span></div>
-                    <input type="range" id="sfx-volume-slider" min="0" max="100" value="100" style="width: 80%; max-width: 250px;">
+            <h1 style="font-size:28px;">SETTINGS</h1>
+            <div class="settings-columns">
+                <div class="settings-col">
+                    <h4 class="settings-heading">SONIDO</h4>
+                    <div class="volume-control-container">
+                        <div style="color: #fff; font-size: 9px;">VOLUMEN: <span id="sfx-volume-label">100%</span></div>
+                        <input type="range" id="sfx-volume-slider" min="0" max="100" value="100">
+                    </div>
+
+                    <h4 class="settings-heading">ESQUEMA DE CONTROL</h4>
+                    <button id="scheme-toggle-btn" class="settings-btn-sm">TECLADO Y RATÓN</button>
+                    <button id="p1-mode-toggle-btn" class="settings-btn-sm">JUGADOR 1: TECLADO</button>
+                    <div id="mouse-info-box" class="mouse-info-box"></div>
                 </div>
-                <div style="border-top:1px dashed #444; width:80%; margin: 10px auto; padding-top:15px;">
-                    <div style="color:#39ff14; font-size:12px; margin-bottom:12px;">CONTROLES — HABILIDADES</div>
-                    <button id="rebind-ability-btn">HABILIDAD: <span id="rebind-ability-label">Q</span></button>
+
+                <div class="settings-col">
+                    <h4 class="settings-heading">JUGADOR 1 — MAPEO DE TECLAS</h4>
+                    <div class="keymap-grid" id="keymap-p1"></div>
+
+                    <h4 class="settings-heading" id="p2-keymap-heading">JUGADOR 2 — MAPEO DE TECLAS</h4>
+                    <div class="keymap-grid" id="keymap-p2"></div>
                 </div>
-                <button id="back-from-settings">VOLVER</button>
             </div>
+            <button id="back-from-settings" style="margin-top: 16px;">VOLVER</button>
         </div>
 
         <!-- ===== PAUSA ===== -->
@@ -129,7 +130,7 @@
             <h1>PAUSA</h1>
             <div class="btn-group">
                 <button id="resume-btn">CONTINUAR</button>
-                <button id="toggle-input-pause">CONTROL P1: TECLADO</button>
+                <button id="pause-settings-btn">AJUSTES</button>
                 <button id="exit-pause-btn" style="border-color: #ff3333; color: #ffcccc;">SALIR AL MENÚ</button>
             </div>
         </div>
@@ -142,27 +143,17 @@
             <button id="restart-btn">REINTENTAR MISIÓN</button>
             <button id="exit-gameover-btn" style="margin-top: 15px; font-size: 14px; padding: 15px 30px;">SALIR AL MENÚ</button>
         </div>
-    </div>
 
-    <aside class="sidebar" id="right-sidebar">
-        <div id="right-panel-powerups" class="powerup-container">
-            <h3>POWERUPS</h3>
-            <div id="slot-triple" class="powerup-slot" style="color:#ffff00;"><canvas id="icon-triple-canvas" width="40" height="40"></canvas><span>TRIPLE</span></div>
-            <div id="slot-laser" class="powerup-slot" style="color:#ff3366;"><canvas id="icon-laser-canvas" width="40" height="40"></canvas><span>LÁSER</span></div>
-            <div id="slot-missile" class="powerup-slot" style="color:#ff8800;"><canvas id="icon-missile-canvas" width="40" height="40"></canvas><span>MISILES</span></div>
-            <div id="slot-shield" class="powerup-slot" style="color:#00ffff;"><canvas id="icon-shield-canvas" width="40" height="40"></canvas><span>ESCUDO</span></div>
-            <div id="slot-heal" class="powerup-slot" style="color:#00ff00;"><canvas id="icon-heal-canvas" width="40" height="40"></canvas><span>REPARAR</span></div>
-            <div id="slot-revive" class="powerup-slot" style="color:#ff0000; display:none; border-color:red; box-shadow:0 0 10px red;"><canvas id="icon-revive-canvas" width="40" height="40"></canvas><span>REVIVIR</span></div>
+        <!-- Powerups: esquina inferior derecha, fila compacta, solo visible jugando -->
+        <div id="corner-powerups" class="hidden">
+            <div id="slot-triple" class="powerup-slot-sm" style="color:#ffff00;"><canvas id="icon-triple-canvas" width="40" height="40"></canvas></div>
+            <div id="slot-laser" class="powerup-slot-sm" style="color:#ff3366;"><canvas id="icon-laser-canvas" width="40" height="40"></canvas></div>
+            <div id="slot-missile" class="powerup-slot-sm" style="color:#ff8800;"><canvas id="icon-missile-canvas" width="40" height="40"></canvas></div>
+            <div id="slot-shield" class="powerup-slot-sm" style="color:#00ffff;"><canvas id="icon-shield-canvas" width="40" height="40"></canvas></div>
+            <div id="slot-heal" class="powerup-slot-sm" style="color:#00ff00;"><canvas id="icon-heal-canvas" width="40" height="40"></canvas></div>
+            <div id="slot-revive" class="powerup-slot-sm" style="display:none; color:#ff0000; border-color:red; box-shadow:0 0 8px red;"><canvas id="icon-revive-canvas" width="40" height="40"></canvas></div>
         </div>
-        <div id="right-panel-p2" class="control-group" style="display:none; border:none; padding-top:0;">
-            <h3>PILOT DATA</h3>
-            <div class="control-title" style="color:#ffaa00;">JUGADOR 2</div>
-            <div class="control-row"><canvas id="icon-mouse-move" width="30" height="40"></canvas></div>
-            <div class="control-label">MOVERSE</div><br>
-            <div class="control-row"><canvas id="icon-mouse-click" width="30" height="40"></canvas></div>
-            <div class="control-label">DISPARAR</div>
-        </div>
-    </aside>
+    </div>
 
 </div>
 

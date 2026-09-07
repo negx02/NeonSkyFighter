@@ -28,11 +28,13 @@ export function showHudMsg(text) {
 
 export function showGameHUD() {
     uiLayer.classList.remove('hidden');
+    cornerPowerups.classList.remove('hidden');
     canvas.classList.remove('canvas-blur');
     canvas.style.cursor = 'crosshair';
 }
 export function hideGameHUD() {
     uiLayer.classList.add('hidden');
+    cornerPowerups.classList.add('hidden');
     canvas.classList.add('canvas-blur');
     canvas.style.cursor = 'default';
 }
@@ -40,12 +42,7 @@ export function setP2HudVisible(visible) {
     hudP2Container.style.display = visible ? 'flex' : 'none';
 }
 
-const rightPanelPowerups = document.getElementById('right-panel-powerups');
-const rightPanelP2 = document.getElementById('right-panel-p2');
-export function setRightPanelMode(mode) {
-    rightPanelPowerups.style.display = mode === '2P' ? 'none' : 'flex';
-    rightPanelP2.style.display = mode === '2P' ? 'flex' : 'none';
-}
+const cornerPowerups = document.getElementById('corner-powerups');
 
 export function updateAbilityUI() {
     const p1 = state.players.find(p => p.id === 1);

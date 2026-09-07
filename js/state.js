@@ -14,11 +14,11 @@ export const state = {
     frames: 0,
     difficulty: 1,
 
-    inputMode: 'keyboard',
     mouseX: 0,
     mouseY: 0,
     isMouseDown: false,
-    keys: { Space: false, w: false, a: false, s: false, d: false, ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false },
+    p1Pressed: { up: false, down: false, left: false, right: false, shoot: false },
+    p2Pressed: { up: false, down: false, left: false, right: false, shoot: false },
 
     players: [],
     bullets: [],

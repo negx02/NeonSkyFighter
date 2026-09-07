@@ -7,10 +7,9 @@ import {
     UPGRADES, getUpgradeLevel, upgradeCost, purchaseUpgrade
 } from './systems/progression.js';
 import { getLevel, xpProgress, LEVEL_CAP } from './config.js';
-import { getAbilityKey, startRebind } from './systems/input.js';
+import { getBindings, startRebind, controlSettings, setScheme, setP1Mode, isMouseControlled } from './systems/input.js';
 import { getSfxVolume, setSfxVolume, playSFX } from './audio.js';
 import { startGame, resetToMenu, togglePause } from './game.js';
-import { setRightPanelMode } from './systems/ui.js';
 import { coinIconHTML } from './systems/icons.js';
 
 const ALL_SCREENS = ['start-screen', 'mode-select-screen', 'hangar-screen', 'settings-screen', 'taller-screen', 'pause-screen', 'game-over-screen'];
@@ -35,7 +34,6 @@ function updateProgressLabels() {
 // ===== PANTALLA DE INICIO =====
 export function goHome() {
     resetToMenu();
-    setRightPanelMode('1P');
     updateProgressLabels();
     showScreen('start-screen');
 }
@@ -181,34 +179,89 @@ function renderTaller() {
 }
 
 // ===== SETTINGS =====
-function openSettings() { showScreen('settings-screen'); }
+function openSettings() { showScreen('settings-screen'); renderSettings(); }
 
 function backFromSettings() {
     if (state.gameRunning) showScreen('pause-screen');
     else showScreen('start-screen');
 }
 
-function toggleInputMode() {
-    state.inputMode = state.inputMode === 'keyboard' ? 'mouse' : 'keyboard';
-    const text = `CONTROL P1: ${state.inputMode === 'keyboard' ? 'TECLADO' : 'RATÓN'}`;
-    document.getElementById('toggle-input-settings').innerText = text;
-    document.getElementById('toggle-input-pause').innerText = text;
-    document.getElementById('toggle-input-settings').classList.toggle('active-mode', state.inputMode === 'mouse');
-    document.getElementById('toggle-input-pause').classList.toggle('active-mode', state.inputMode === 'mouse');
+const CODE_LABELS = {
+    KeyA: 'A', KeyB: 'B', KeyC: 'C', KeyD: 'D', KeyE: 'E', KeyF: 'F', KeyG: 'G', KeyH: 'H', KeyI: 'I', KeyJ: 'J',
+    KeyK: 'K', KeyL: 'L', KeyM: 'M', KeyN: 'N', KeyO: 'O', KeyP: 'P', KeyQ: 'Q', KeyR: 'R', KeyS: 'S', KeyT: 'T',
+    KeyU: 'U', KeyV: 'V', KeyW: 'W', KeyX: 'X', KeyY: 'Y', KeyZ: 'Z',
+    ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
+    ControlRight: 'CTRL DER', ControlLeft: 'CTRL IZQ', ShiftRight: 'SHIFT DER', ShiftLeft: 'SHIFT IZQ',
+    AltRight: 'ALT DER', AltLeft: 'ALT IZQ', Space: 'ESPACIO', Enter: 'ENTER', Tab: 'TAB',
+};
+function codeLabel(code) { return CODE_LABELS[code] || code.replace('Key', '').replace('Digit', ''); }
+
+const ACTION_LABELS = { up: 'Moverse arriba', down: 'Moverse abajo', left: 'Moverse izquierda', right: 'Moverse derecha', ability: 'Habilidad especial' };
+
+function renderKeymap(playerNum, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    const bindings = getBindings(playerNum);
+    ['up', 'down', 'left', 'right', 'ability'].forEach(action => {
+        const row = document.createElement('div');
+        row.className = 'keymap-row';
+        const label = document.createElement('span');
+        label.innerText = ACTION_LABELS[action];
+        row.appendChild(label);
+        const btn = document.createElement('button');
+        btn.innerText = codeLabel(bindings[action]);
+        btn.addEventListener('click', () => {
+            btn.classList.add('listening');
+            btn.innerText = '...';
+            startRebind(playerNum, action, (code, reason) => {
+                btn.classList.remove('listening');
+                if (code === null) {
+                    btn.classList.add('duplicate-error');
+                    document.getElementById('powerup-status').innerText = reason === 'duplicate' ? 'ESA TECLA YA ESTÁ EN USO' : 'TECLA RESERVADA, ELIGE OTRA';
+                    setTimeout(() => renderKeymap(playerNum, containerId), 900);
+                } else {
+                    renderKeymap(playerNum, containerId);
+                    if (playerNum === 1 && action === 'ability') updateAbilityKeyHud();
+                }
+            });
+        });
+        row.appendChild(btn);
+        container.appendChild(row);
+    });
 }
 
-function startRebindUI() {
-    const btn = document.getElementById('rebind-ability-btn');
-    const label = document.getElementById('rebind-ability-label');
-    btn.classList.add('listening');
-    label.innerText = '...';
-    startRebind(1, (key) => {
-        btn.classList.remove('listening');
-        if (key === null) { document.getElementById('powerup-status').innerText = 'TECLA RESERVADA, ELIGE OTRA'; }
-        label.innerText = getAbilityKey(1).toUpperCase();
-        const hudKeyLabel = document.getElementById('ability-key-label');
-        if (hudKeyLabel) hudKeyLabel.innerText = getAbilityKey(1).toUpperCase();
-    });
+function updateAbilityKeyHud() {
+    const hudKeyLabel = document.getElementById('ability-key-label');
+    if (!hudKeyLabel) return;
+    hudKeyLabel.innerText = isMouseControlled(1) ? 'CLIC DER.' : codeLabel(getBindings(1).ability);
+}
+
+function renderSettings() {
+    const schemeBtn = document.getElementById('scheme-toggle-btn');
+    const p1ModeBtn = document.getElementById('p1-mode-toggle-btn');
+    const mouseInfo = document.getElementById('mouse-info-box');
+    const p2Heading = document.getElementById('p2-keymap-heading');
+    const p2Grid = document.getElementById('keymap-p2');
+
+    schemeBtn.innerText = controlSettings.scheme === 'mixed' ? 'ESQUEMA: TECLADO Y RATÓN' : 'ESQUEMA: AMBOS CON TECLADO';
+
+    const showP1ModeToggle = controlSettings.scheme === 'mixed';
+    p1ModeBtn.classList.toggle('hidden', !showP1ModeToggle);
+    if (showP1ModeToggle) p1ModeBtn.innerText = `JUGADOR 1: ${controlSettings.p1Mode === 'keyboard' ? 'TECLADO' : 'RATÓN'}`;
+
+    renderKeymap(1, 'keymap-p1');
+
+    if (controlSettings.scheme === 'both-keyboard') {
+        p2Heading.classList.remove('hidden'); p2Grid.classList.remove('hidden');
+        renderKeymap(2, 'keymap-p2');
+        mouseInfo.classList.add('hidden');
+    } else {
+        p2Heading.classList.add('hidden'); p2Grid.classList.add('hidden');
+        const mouseIsP1 = controlSettings.p1Mode === 'mouse';
+        mouseInfo.classList.remove('hidden');
+        mouseInfo.innerHTML = `${mouseIsP1 ? 'JUGADOR 1' : 'JUGADOR 2'} (RATÓN, fijo):<br>Clic izquierdo: Disparar<br>Clic derecho: Habilidad especial`;
+    }
+    updateAbilityKeyHud();
 }
 
 export function initScreens() {
@@ -234,9 +287,15 @@ export function initScreens() {
 
     // settings
     document.getElementById('back-from-settings').addEventListener('click', backFromSettings);
-    document.getElementById('toggle-input-settings').addEventListener('click', toggleInputMode);
-    document.getElementById('toggle-input-pause').addEventListener('click', toggleInputMode);
-    document.getElementById('rebind-ability-btn').addEventListener('click', startRebindUI);
+    document.getElementById('pause-settings-btn').addEventListener('click', openSettings);
+    document.getElementById('scheme-toggle-btn').addEventListener('click', () => {
+        setScheme(controlSettings.scheme === 'mixed' ? 'both-keyboard' : 'mixed');
+        renderSettings();
+    });
+    document.getElementById('p1-mode-toggle-btn').addEventListener('click', () => {
+        setP1Mode(controlSettings.p1Mode === 'keyboard' ? 'mouse' : 'keyboard');
+        renderSettings();
+    });
     document.getElementById('sfx-volume-slider').addEventListener('input', (e) => {
         setSfxVolume(e.target.value / 100);
         document.getElementById('sfx-volume-label').innerText = `${e.target.value}%`;
@@ -248,11 +307,8 @@ export function initScreens() {
     document.getElementById('exit-gameover-btn').addEventListener('click', goHome);
     document.getElementById('restart-btn').addEventListener('click', beginMission);
 
-    // labels iniciales
-    document.getElementById('rebind-ability-label').innerText = getAbilityKey(1).toUpperCase();
-    const hudKeyLabel = document.getElementById('ability-key-label');
-    if (hudKeyLabel) hudKeyLabel.innerText = getAbilityKey(1).toUpperCase();
     document.getElementById('sfx-volume-slider').value = getSfxVolume() * 100;
+    updateAbilityKeyHud();
 
     updateProgressLabels();
     showScreen('start-screen');

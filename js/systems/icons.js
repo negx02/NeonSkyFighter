@@ -10,34 +10,6 @@ export function coinIconHTML(size = 14) {
     </svg>`;
 }
 
-export function drawControlIcons() {
-    const w = document.getElementById('icon-wasd').getContext('2d');
-    w.fillStyle = '#333'; w.strokeStyle = '#ff00ff'; w.lineWidth = 2;
-    w.fillRect(22, 2, 16, 16); w.strokeRect(22, 2, 16, 16); w.fillStyle = '#fff'; w.font = '10px Arial'; w.fillText('W', 25, 14);
-    w.fillStyle = '#333'; w.fillRect(2, 20, 16, 16); w.strokeRect(2, 20, 16, 16); w.fillStyle = '#fff'; w.fillText('A', 5, 32);
-    w.fillStyle = '#333'; w.fillRect(22, 20, 16, 16); w.strokeRect(22, 20, 16, 16); w.fillStyle = '#fff'; w.fillText('S', 25, 32);
-    w.fillStyle = '#333'; w.fillRect(42, 20, 16, 16); w.strokeRect(42, 20, 16, 16); w.fillStyle = '#fff'; w.fillText('D', 45, 32);
-
-    const m = document.getElementById('icon-mouse-move').getContext('2d');
-    m.fillStyle = '#333'; m.strokeStyle = '#00ffff'; m.lineWidth = 2;
-    m.fillRect(8, 12, 14, 22); m.strokeRect(8, 12, 14, 22);
-    m.beginPath(); m.moveTo(15, 12); m.lineTo(15, 5); m.stroke();
-    m.beginPath(); m.moveTo(15, 12); m.lineTo(15, 20); m.stroke();
-    m.beginPath(); m.moveTo(8, 20); m.lineTo(22, 20); m.stroke();
-
-    const s = document.getElementById('icon-space').getContext('2d');
-    s.fillStyle = '#333'; s.strokeStyle = '#ff00ff'; s.lineWidth = 2;
-    s.fillRect(2, 8, 56, 14); s.strokeRect(2, 8, 56, 14); s.fillStyle = '#fff'; s.font = '8px Arial'; s.fillText('SPACE', 16, 18);
-
-    const mc = document.getElementById('icon-mouse-click').getContext('2d');
-    mc.fillStyle = '#333'; mc.strokeStyle = '#00ffff'; mc.lineWidth = 2;
-    mc.fillRect(8, 12, 14, 22); mc.strokeRect(8, 12, 14, 22);
-    mc.beginPath(); mc.moveTo(15, 12); mc.lineTo(15, 5); mc.stroke();
-    mc.fillStyle = '#ff00ff'; mc.fillRect(9, 13, 6, 7);
-    mc.beginPath(); mc.moveTo(15, 12); mc.lineTo(15, 20); mc.stroke();
-    mc.beginPath(); mc.moveTo(8, 20); mc.lineTo(22, 20); mc.stroke();
-}
-
 export function drawSidebarIcons() {
     const ctxT = document.getElementById('icon-triple-canvas').getContext('2d');
     ctxT.strokeStyle = '#ffff00'; ctxT.lineWidth = 2; ctxT.beginPath(); ctxT.arc(20, 20, 18, 0, Math.PI * 2); ctxT.stroke();

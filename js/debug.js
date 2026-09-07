@@ -61,8 +61,9 @@ panel.querySelectorAll('button[data-dbg]').forEach(btn => {
             if (!ensureGameActive()) return;
             const lvl = parseInt(btn.dataset.lvl);
             state.isBossActive = true; state.enemies = []; state.powerups = []; state.asteroids = []; state.bosses = [];
-            const bossWidth = 20 * 8;
-            state.bosses.push(new Boss(canvas.width / 2 - bossWidth / 2, 1, lvl));
+            const newBoss = new Boss(0, 1, lvl);
+            newBoss.x = canvas.width / 2 - newBoss.width / 2;
+            state.bosses.push(newBoss);
             state.bossLevel = lvl;
             bossHPContainer.classList.remove('hidden');
             bossLvlDisplay.innerText = lvl;

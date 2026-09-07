@@ -11,6 +11,7 @@ import { createExplosion } from '../systems/particles.js';
 import { screenShake, hitStop } from '../systems/juice.js';
 import { showHudMsg } from '../systems/ui.js';
 import { triggerBomb } from '../systems/combatEvents.js';
+import { isMouseControlled } from '../systems/input.js';
 
 export class Player {
     constructor(id, shipId) {
@@ -55,21 +56,15 @@ export class Player {
         if (this.ship.abilityId === 'phase' && this.intangible) spd *= 1.5;
         if (this.ship.abilityId === 'fury' && this.furyTimer > 0) spd *= 1.3;
 
-        const { keys } = state;
-        if (this.id === 1) {
-            if (state.gameMode === '1P' && state.inputMode === 'mouse') {
-                this.x += (state.mouseX - this.width / 2 - this.x) * 0.15;
-                this.y += (state.mouseY - this.height / 2 - this.y) * 0.15;
-                if (state.isMouseDown) shoot = true;
-            } else {
-                if (keys.a || keys.ArrowLeft) this.x -= spd; if (keys.d || keys.ArrowRight) this.x += spd;
-                if (keys.w || keys.ArrowUp) this.y -= spd; if (keys.s || keys.ArrowDown) this.y += spd;
-                if (keys.Space) shoot = true;
-            }
-        } else if (this.id === 2) {
+        if (isMouseControlled(this.id)) {
             this.x += (state.mouseX - this.width / 2 - this.x) * 0.15;
             this.y += (state.mouseY - this.height / 2 - this.y) * 0.15;
             if (state.isMouseDown) shoot = true;
+        } else {
+            const pressed = this.id === 2 ? state.p2Pressed : state.p1Pressed;
+            if (pressed.left) this.x -= spd; if (pressed.right) this.x += spd;
+            if (pressed.up) this.y -= spd; if (pressed.down) this.y += spd;
+            if (pressed.shoot) shoot = true;
         }
 
         if (this.x < 0) this.x = 0; if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
@@ -83,7 +78,15 @@ export class Player {
         this.trail.forEach(t => t.life--);
         this.trail = this.trail.filter(t => t.life > 0);
 
-        if (this.heat > 0) { this.heat -= (this.weaponLevel === 3 ? 0.6 : 1.0); if (this.overheated && this.heat <= 40) this.overheated = false; }
+        // El calor solo baja si NO estás disparando, o siempre si ya está sobrecalentada
+        // (así ninguna nave puede disparar indefinidamente sin sobrecalentarse, sin importar mejoras).
+        if (this.overheated) {
+            this.heat -= 1.0;
+            if (this.heat <= 40) this.overheated = false;
+        } else if (!shoot && this.heat > 0) {
+            this.heat -= (this.weaponLevel === 3 ? 0.6 : 1.0);
+        }
+        if (this.heat < 0) this.heat = 0;
 
         let fireInterval = (this.ship.fireMode === 'heavy') ? 14 : 8;
         if (this.furyTimer > 0 || this.fireBoostTimer > 0) fireInterval = 3;
@@ -209,8 +212,9 @@ export class Player {
         switch (ship.abilityId) {
             case 'dash': {
                 let dx = 0, dy = -1;
-                if (state.keys.a || state.keys.ArrowLeft) dx = -1; if (state.keys.d || state.keys.ArrowRight) dx = 1;
-                if (state.keys.w || state.keys.ArrowUp) dy = -1; if (state.keys.s || state.keys.ArrowDown) dy = 1;
+                const pressed = this.id === 2 ? state.p2Pressed : state.p1Pressed;
+                if (pressed.left) dx = -1; if (pressed.right) dx = 1;
+                if (pressed.up) dy = -1; if (pressed.down) dy = 1;
                 const len = Math.hypot(dx, dy) || 1;
                 this.x += (dx / len) * 110; this.y += (dy / len) * 110;
                 this.x = Math.max(0, Math.min(canvas.width - this.width, this.x));
